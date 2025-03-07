@@ -191,6 +191,30 @@ services:
 
             - "traefik.http.services.grafana.loadbalancer.server.port=4000"
 
+    prometheus:
+        image: docker.arvancloud.ir/prom/prometheus:v3.2.1
+        container_name: prometheus
+        volumes:
+            - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+        command:
+            - "--config.file=/etc/prometheus/prometheus.yml"
+        networks:
+            - web_net
+        ports:
+            - "9090:9090"
+
+    node_exporter:
+        image: docker.arvancloud.ir/prom/node-exporter:v1.9.0
+        container_name: node_exporter
+        ports:
+            - "9100:9100"
+        volumes:
+            - /:/host:ro,rslave
+        command:
+            - "--path.rootfs=/host"
+        networks:
+            - web_net
+
     redis:
         image: redis:latest
         container_name: redis

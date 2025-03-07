@@ -1,0 +1,22 @@
+global:
+    scrape_interval: 15s # How often to scrape targets
+    evaluation_interval: 15s # How often to evaluate rules
+
+scrape_configs:
+    # Scrape metrics from Prometheus itself
+    - job_name: "prometheus"
+      static_configs:
+          - targets: ["localhost:9090"]
+
+    # Scrape metrics from a Django app
+    - job_name: "django_app"
+      static_configs:
+          - targets: ["api.khosh-trip.ir"] # Replace with your Django app's host and port
+      metrics_path: "/metrics" # Default endpoint for Prometheus metrics
+      scheme: "https" # Use 'https' if your app uses HTTPS
+
+    - job_name: "node_exporter"
+      static_configs:
+          - targets: ["localhost:9100"] # Replace with your Django app's host and port
+      metrics_path: "/metrics" # Default endpoint for Prometheus metrics
+      scheme: "http" # Use 'https' if your app uses HTTPS

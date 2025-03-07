@@ -1,0 +1,157 @@
+networks:
+  web_net:
+
+volumes:
+  traefik-acme:
+    name: traefik-acme
+  data:
+    name: backend-data
+
+
+services:
+  traefik:
+    image: traefik:v2.10
+    container_name: traefik
+    hostname: traefik
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - traefik-acme:/acme
+    networks:
+      - web_net
+    command:
+      - "--log.filepath=/log-file.log"
+      - "--log.format=json"
+      - "--api=true"
+      - "--ping=true"
+      - "--accesslog=true"
+      - "--accesslog.bufferingsize=250"
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.endpoint=unix:///var/run/docker.sock"
+      - "--providers.docker.exposedbydefault=false"
+      - "--providers.docker.network=web_net"
+      - "--entrypoints.http.address=:80"
+      - "--entrypoints.https.address=:443"
+      - "--certificatesresolvers.mycert.acme.email=${ACME_EMAIL}"
+      - "--certificatesresolvers.mycert.acme.storage=/acme/acme.json"
+      - "--certificatesresolvers.mycert.acme.tlschallenge=true"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=web_net"
+      - "traefik.http.routers.traefik.entrypoints=http"
+      - "traefik.http.routers.traefik.rule=Host(`web.khosh-trip.ir`)"
+      - "traefik.http.middlewares.web-auth.basicauth.users=${WEB_AUTH_USER}:${WEB_AUTH_PASS}"
+      - "traefik.http.routers.traefik.middlewares=https-redirect"
+      - "traefik.http.middlewares.https-redirect.redirectscheme.scheme=https"
+      - "traefik.http.routers.traefik-secure.entrypoints=https"
+      - "traefik.http.routers.traefik-secure.rule=Host(`web.khosh-trip.ir`)"
+      - "traefik.http.routers.traefik-secure.tls=true"
+      - "traefik.http.routers.traefik-secure.tls.options=default"
+      - "traefik.http.routers.traefik-secure.middlewares=web-auth"
+      - "traefik.http.routers.traefik-secure.tls.certresolver=mycert"
+      - "traefik.http.routers.traefik-secure.service=traefik"
+      - "traefik.http.services.traefik.loadbalancer.server.port=8080"
+
+  backend:
+    build:
+      context: ../backend
+    container_name: backend
+    networks:
+      - web_net
+    volumes:
+      - data:/opt/data
+    environment:
+      DEBUG: "True"
+      SECRET_KEY: "secret-key-insecure-advaDVarbe4vadbfa43gh5baibAFb3"
+      ALLOWED_HOSTS: "127.0.0.1,0.0.0.0,localhost"
+      CSRF_TRUSTED_ORIGINS: "http://127.0.0.1,http://0.0.0.0"
+      CORS_ALLOWED_ORIGINS: "http://127.0.0.1:3000,http://localhost:3000,http://localhost:3000"
+      # TODO: Read from .env file
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=web_net"
+      - "traefik.http.routers.backend.entrypoints=http"
+      - "traefik.http.routers.backend.rule=Host(`api.khosh-trip.ir`)  && PathPrefix(`/api`)"
+      - "traefik.http.routers.backend.middlewares=https-redirect"
+      - "traefik.http.middlewares.https-redirect.redirectscheme.scheme=https"
+      - "traefik.http.routers.backend-secure.entrypoints=https"
+      - "traefik.http.routers.backend-secure.rule=Host(`api.khosh-trip.ir`)  && PathPrefix(`/api`)"
+      - "traefik.http.routers.backend-secure.tls=true"
+      - "traefik.http.routers.backend-secure.tls.options=default"
+      - "traefik.http.routers.backend-secure.tls.certresolver=mycert"
+      - "traefik.http.routers.backend-secure.service=backend"
+      - "traefik.http.services.backend.loadbalancer.server.port=8000"
+      
+
+
+  customer_front:
+    build:
+      context: ../frontend/customer-front
+    container_name: customer_front
+    networks:
+      - web_net
+    environment:
+      REACT_APP_API_BASE_URL: "http://localhost:8000/api"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=web_net"
+      - "traefik.http.routers.customer.entrypoints=http"
+      - "traefik.http.routers.customer.rule=Host(`customer.khosh-trip.ir`)"
+      - "traefik.http.routers.customer.middlewares=https-redirect"
+      - "traefik.http.middlewares.https-redirect.redirectscheme.scheme=https"
+      - "traefik.http.routers.customer-secure.entrypoints=https"
+      - "traefik.http.routers.customer-secure.rule=Host(`customer.khosh-trip.ir`)"
+      - "traefik.http.routers.customer-secure.tls=true"
+      - "traefik.http.routers.customer-secure.tls.options=default"
+      - "traefik.http.routers.customer-secure.tls.certresolver=mycert"
+      - "traefik.http.routers.customer-secure.service=customer"
+      - "traefik.http.services.customer.loadbalancer.server.port=3000"
+    
+  provider_front:
+    build:
+      context: ../frontend/provider-front
+    container_name: provider_front
+    networks:
+      - web_net
+    environment:
+      REACT_APP_API_BASE_URL: "http://localhost:8000/api"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=web_net"
+      - "traefik.http.routers.provider.entrypoints=http"
+      - "traefik.http.routers.provider.rule=Host(`provider.khosh-trip.ir`)"
+      - "traefik.http.routers.provider.middlewares=https-redirect"
+      - "traefik.http.middlewares.https-redirect.redirectscheme.scheme=https"
+      - "traefik.http.routers.provider-secure.entrypoints=https"
+      - "traefik.http.routers.provider-secure.rule=Host(`provider.khosh-trip.ir`)"
+      - "traefik.http.routers.provider-secure.tls=true"
+      - "traefik.http.routers.provider-secure.tls.options=default"
+      - "traefik.http.routers.provider-secure.tls.certresolver=mycert"
+      - "traefik.http.routers.provider-secure.service=provider"
+      - "traefik.http.services.provider.loadbalancer.server.port=3000"
+
+  admin_front:
+    build:
+      context: ../frontend/admin-front
+    container_name: admin_front
+    networks:
+      - web_net
+    environment:
+      REACT_APP_API_BASE_URL: "http://localhost:8000/api"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=web_net"
+      - "traefik.http.routers.admin.entrypoints=http"
+      - "traefik.http.routers.admin.rule=Host(`admin.khosh-trip.ir`)"
+      - "traefik.http.routers.admin.middlewares=https-redirect"
+      - "traefik.http.middlewares.https-redirect.redirectscheme.scheme=https"
+      - "traefik.http.routers.admin-secure.entrypoints=https"
+      - "traefik.http.routers.admin-secure.rule=Host(`admin.khosh-trip.ir`)"
+      - "traefik.http.routers.admin-secure.tls=true"
+      - "traefik.http.routers.admin-secure.tls.options=default"
+      - "traefik.http.routers.admin-secure.tls.certresolver=mycert"
+      - "traefik.http.routers.admin-secure.service=admin"
+      - "traefik.http.services.admin.loadbalancer.server.port=3000"

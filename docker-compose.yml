@@ -86,7 +86,7 @@ services:
       - "traefik.http.routers.backend-secure.service=backend"
 
       - "traefik.http.routers.backend-admin.entrypoints=https"
-      - "traefik.http.routers.backend-admin.rule=Host(`django.khosh-trip.ir`)  && PathPrefix(`/admin`)"
+      - "traefik.http.routers.backend-admin.rule=Host(`django.khosh-trip.ir`)  && ( PathPrefix(`/admin`) || PathPrefix(`/static`))"
       - "traefik.http.routers.backend-admin.tls=true"
       - "traefik.http.routers.backend-admin.tls.options=default"
       - "traefik.http.routers.backend-admin.tls.certresolver=mycert"

@@ -200,20 +200,48 @@ services:
             - "--config.file=/etc/prometheus/prometheus.yml"
         networks:
             - web_net
-        ports:
-            - "9090:9090"
+        labels:
+            - "traefik.enable=true"
+            - "traefik.docker.network=web_net"
+            - "traefik.http.routers.prometheus.entrypoints=http"
+            - "traefik.http.routers.prometheus.rule=Host(`prometheus.khosh-trip.ir`)"
+            - "traefik.http.routers.prometheus.middlewares=https-redirect"
+            - "traefik.http.middlewares.https-redirect.redirectscheme.scheme=https"
+
+            - "traefik.http.routers.prometheus-secure.entrypoints=https"
+            - "traefik.http.routers.prometheus-secure.rule=Host(`prometheus.khosh-trip.ir`)"
+            - "traefik.http.routers.prometheus-secure.tls=true"
+            - "traefik.http.routers.prometheus-secure.tls.options=default"
+            - "traefik.http.routers.prometheus-secure.tls.certresolver=mycert"
+            - "traefik.http.routers.prometheus-secure.service=prometheus"
+
+            - "traefik.http.services.prometheus.loadbalancer.server.port=9090"
 
     node_exporter:
         image: docker.arvancloud.ir/prom/node-exporter:v1.9.0
         container_name: node_exporter
-        ports:
-            - "9100:9100"
         volumes:
             - /:/host:ro,rslave
         command:
             - "--path.rootfs=/host"
         networks:
             - web_net
+        labels:
+            - "traefik.enable=true"
+            - "traefik.docker.network=web_net"
+            - "traefik.http.routers.node-exporter.entrypoints=http"
+            - "traefik.http.routers.node-exporter.rule=Host(`node-exporter.khosh-trip.ir`)"
+            - "traefik.http.routers.node-exporter.middlewares=https-redirect"
+            - "traefik.http.middlewares.https-redirect.redirectscheme.scheme=https"
+
+            - "traefik.http.routers.node-exporter-secure.entrypoints=https"
+            - "traefik.http.routers.node-exporter-secure.rule=Host(`node-exporter.khosh-trip.ir`)"
+            - "traefik.http.routers.node-exporter-secure.tls=true"
+            - "traefik.http.routers.node-exporter-secure.tls.options=default"
+            - "traefik.http.routers.node-exporter-secure.tls.certresolver=mycert"
+            - "traefik.http.routers.node-exporter-secure.service=node-exporter"
+
+            - "traefik.http.services.node-exporter.loadbalancer.server.port=9100"
 
     redis:
         image: redis:latest

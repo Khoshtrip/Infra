@@ -80,14 +80,14 @@ services:
             - "traefik.http.middlewares.https-redirect.redirectscheme.scheme=https"
 
             - "traefik.http.routers.backend-secure.entrypoints=https"
-            - "traefik.http.routers.backend-secure.rule=Host(`api.khosh-trip.ir`)  && ( PathPrefix(`/api`) || PathPrefix(`/static`))"
+            - "traefik.http.routers.backend-secure.rule=Host(`api.khosh-trip.ir`)  && ( PathPrefix(`/api`) || PathPrefix(`/static`) || PathPrefix(`/metrics`))"
             - "traefik.http.routers.backend-secure.tls=true"
             - "traefik.http.routers.backend-secure.tls.options=default"
             - "traefik.http.routers.backend-secure.tls.certresolver=mycert"
             - "traefik.http.routers.backend-secure.service=backend"
 
             - "traefik.http.routers.backend-admin.entrypoints=https"
-            - "traefik.http.routers.backend-admin.rule=Host(`django.khosh-trip.ir`)  && ( PathPrefix(`/admin`) || PathPrefix(`/static`))"
+            - "traefik.http.routers.backend-admin.rule=Host(`django.khosh-trip.ir`)  && ( PathPrefix(`/admin`) || PathPrefix(`/static`) || PathPrefix(`/metrics`))"
             - "traefik.http.routers.backend-admin.tls=true"
             - "traefik.http.routers.backend-admin.tls.options=default"
             - "traefik.http.routers.backend-admin.tls.certresolver=mycert"

@@ -108,7 +108,7 @@ services:
       - "traefik.enable=true"
       - "traefik.docker.network=web_net"
       - "traefik.http.routers.customer.entrypoints=http"
-      - "traefik.http.routers.customer.rule=Host(`customer.khosh-trip.ir`)"
+      - "traefik.http.routers.customer.rule=Host(`customer.khosh-trip.ir`) || Host(`khosh-trip.ir`) || Host(`www.khosh-trip.ir`)"
       - "traefik.http.routers.customer.middlewares=https-redirect"
       - "traefik.http.middlewares.https-redirect.redirectscheme.scheme=https"
       - "traefik.http.routers.customer-secure.entrypoints=https"

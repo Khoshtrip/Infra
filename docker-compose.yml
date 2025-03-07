@@ -6,6 +6,9 @@ volumes:
     name: traefik-acme
   data:
     name: backend-data
+  grafana:
+    name: grafana-storage
+
 
 
 services:
@@ -93,7 +96,7 @@ services:
       - "traefik.http.routers.backend-admin.service=backend"
 
       - "traefik.http.services.backend.loadbalancer.server.port=8000"
-      
+
 
 
   customer_front:
@@ -118,7 +121,7 @@ services:
       - "traefik.http.routers.customer-secure.tls.certresolver=mycert"
       - "traefik.http.routers.customer-secure.service=customer"
       - "traefik.http.services.customer.loadbalancer.server.port=3000"
-    
+
   provider_front:
     build:
       context: ../frontend/provider-front
@@ -164,6 +167,33 @@ services:
       - "traefik.http.routers.admin-secure.tls.certresolver=mycert"
       - "traefik.http.routers.admin-secure.service=admin"
       - "traefik.http.services.admin.loadbalancer.server.port=3000"
+
+  grafana:
+    image: docker.arvancloud.ir/grafana/grafana:11.5.2
+    container_name: grafana
+    volumes:
+      - grafana:/var/lib/grafana
+    networks:
+      - web_net
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_SERVER_HTTP_PORT=4000
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=web_net"
+      - "traefik.http.routers.grafana.entrypoints=http"
+      - "traefik.http.routers.grafana.rule=Host(`grafana.khosh-trip.ir`)"
+      - "traefik.http.routers.grafana.middlewares=https-redirect"
+      - "traefik.http.middlewares.https-redirect.redirectscheme.scheme=https"
+
+      - "traefik.http.routers.grafana-secure.entrypoints=https"
+      - "traefik.http.routers.grafana-secure.rule=Host(`grafana.khosh-trip.ir`)"
+      - "traefik.http.routers.grafana-secure.tls=true"
+      - "traefik.http.routers.grafana-secure.tls.options=default"
+      - "traefik.http.routers.grafana-secure.tls.certresolver=mycert"
+      - "traefik.http.routers.grafana-secure.service=grafana"
+
+      - "traefik.http.services.grafana.loadbalancer.server.port=4000"
 
   redis:
     image: redis:latest

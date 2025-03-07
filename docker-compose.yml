@@ -112,7 +112,7 @@ services:
       - "traefik.http.routers.customer.middlewares=https-redirect"
       - "traefik.http.middlewares.https-redirect.redirectscheme.scheme=https"
       - "traefik.http.routers.customer-secure.entrypoints=https"
-      - "traefik.http.routers.customer-secure.rule=Host(`customer.khosh-trip.ir`)"
+      - "traefik.http.routers.customer-secure.rule=Host(`customer.khosh-trip.ir`) || Host(`khosh-trip.ir`) || Host(`www.khosh-trip.ir`)"
       - "traefik.http.routers.customer-secure.tls=true"
       - "traefik.http.routers.customer-secure.tls.options=default"
       - "traefik.http.routers.customer-secure.tls.certresolver=mycert"

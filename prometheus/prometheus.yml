@@ -6,7 +6,7 @@ scrape_configs:
     # Scrape metrics from Prometheus itself
     - job_name: "prometheus"
       static_configs:
-          - targets: ["prometheus.khosh-trip.ir:9090"]
+          - targets: ["prometheus.khosh-trip.ir"]
       scheme: "https" # Use 'https' if your app uses HTTPS
 
     # Scrape metrics from a Django app
@@ -18,6 +18,6 @@ scrape_configs:
 
     - job_name: "node_exporter"
       static_configs:
-          - targets: ["node-exporter.khosh-trip.ir:9100"] # Replace with your Django app's host and port
+          - targets: ["node-exporter.khosh-trip.ir"] # Replace with your Django app's host and port
       metrics_path: "/metrics" # Default endpoint for Prometheus metrics
       scheme: "https" # Use 'https' if your app uses HTTPS

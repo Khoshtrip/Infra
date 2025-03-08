@@ -6,6 +6,8 @@ volumes:
         name: traefik-acme
     data:
         name: backend-data
+    images:
+        name: backend-images
     grafana:
         name: grafana-storage
 
@@ -64,6 +66,7 @@ services:
             - web_net
         volumes:
             - data:/opt/data
+            - images:/opt/media
         environment:
             DEBUG: "${DJANGO_DEBUG}"
             SECRET_KEY: "${DJANGO_SECRET_KEY}"
